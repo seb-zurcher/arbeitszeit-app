@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Arbeitszeit‑Rechner</title>
+
+  <!-- iOS / Mobile Optimierung -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0078d4">
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
+    }
+  </script>
+
+  <style>
+    :root {
+      --brand: #0078d4;
+      --brand-dark: #005fa3;
+      --bg: #f5f5f5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 20px;
+    }
+
+    /* Hauptbox */
+    .box {
+      background: #fff;
+      padding: 20px;
+      max-width: 480px;
+      width: 100%;
+      margin: auto;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    /* Inputs iOS Bugfix */
+    input, button {
+      font-size: 17px !important; /* Verhindert iOS Auto‑Zoom */
+    }
+
+    input[type="time"],
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin-top: 6px;
+      margin-bottom: 12px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: var(--brand);
+      color: white;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: var(--brand-dark);
+    }
+
+    .row {
+      display: flex;
+      gap: 16px;
+      width: 100%;
+    }
+
+    /* Responsive: Bei iPhone Breite spalten untereinander */
+    @media (max-width: 500px) {
+      .row {
+        flex-direction: column;
+        gap: 0;
+      }
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 14px;
+      background: #e8f4ff;
+      border-left: 4px solid var(--brand);
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .muted {
+      color: #666;
+      font-size: 14px;
+      margin-top: -6px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="box">
+    <h2 style="margin-top:0;">Arbeitszeit‑Rechner</h2>
+
+    <div class="row">
+      <div>
+        <label>Arbeitsbeginn</label>
+        <input type="time" id="start" />
+      </div>
+
+      <div>
+        <label>Mittagspause Start</label>
+        <input type="time" id="lunchStart" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Mittagspause Ende</label>
+        <input type="time" id="lunchEnd" />
+      </div>
+
+      <div>
+        <label>Überzeit (min) ±</label>
+        <input type="number" id="overtime" value="0" step="5" />
+      </div>
+    </div>
+
+    <div class="muted">
+      Sollzeit ist fix: <strong>8 h 18 min</strong> (498 min)
+    </div>
+
+    <button id="calcBtn">Feierabend berechnen</button>
+
+    <div id="output" class="result" style="display:none"></div>
+  </div>
+
+  <script>
+    const TARGET_MIN = 8 * 60 + 18;
+
+    function toMinutes(str) {
+      if (!str) return NaN;
+      const [h, m] = str.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function minutesToHHMM(mins) {
+      mins = ((mins % (24 * 60)) + (24 * 60)) % (24 * 60);
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+    }
+
+    function fmtMinutesSigned(m) {
+      return m > 0 ? `+${m} min`
+           : m < 0 ? `−${Math.abs(m)} min`
+           : "0 min";
+    }
+
+    function calcFeierabend() {
+      const start = toMinutes(document.getElementById("start").value);
+      const ls = toMinutes(document.getElementById("lunchStart").value);
+      const le = toMinutes(document.getElementById("lunchEnd").value);
+      const ot = parseInt(document.getElementById("overtime").value || 0);
+
+      if (isNaN(start) || isNaN(ls) || isNaN(le))
+        return alert("Bitte Zeiten ausfüllen.");
+
+      if (ls <= start)
+        return alert("Mittag Start muss nach Arbeitsbeginn sein.");
+
+      if (le <= ls)
+        return alert("Mittag Ende muss nach Mittag Start sein.");
+
+      const morning = ls - start;
+      let feierabend =
+        morning >= TARGET_MIN ? start + TARGET_MIN : le + (TARGET_MIN - morning);
+
+      const withOT = feierabend + ot;
+
+      const out = document.getElementById("output");
+      out.style.display = "block";
+      out.innerHTML = `
+        <strong>Feierabend (Soll):</strong> ${minutesToHHMM(feierabend)}<br>
+        <strong>Feierabend (mit Überzeit):</strong> ${minutesToHHMM(withOT)}<br>
+        <strong>Überzeit/Unterzeit:</strong> ${fmtMinutesSigned(ot)}
+      `;
+    }
+
+    document
+      .getElementById("calcBtn")
+      .addEventListener("click", calcFeierabend);
+  </script>
+</body>
+</html>
