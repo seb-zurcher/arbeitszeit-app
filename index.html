@@ -8,7 +8,6 @@
   <!-- iOS / Mobile Optimierung -->
   <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0078d4">
 
@@ -23,6 +22,21 @@
       --brand: #0078d4;
       --brand-dark: #005fa3;
       --bg: #f5f5f5;
+      --text: #000;
+      --input-bg: #fff;
+      --input-border: #ccc;
+    }
+
+    /* Dark Mode */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0a2a4d;             /* Dunkles Blau */
+        --text: #f0f4ff;           /* Sehr helles Blau-Weiß */
+        --input-bg: #113966;       /* leicht helleres Blau */
+        --input-border: #3a5a80;   /* subtiler Kontrast */
+        --brand: #2f8fff;          /* Button bleibt blau, wirkt auf dark gut */
+        --brand-dark: #1b6fcc;
+      }
     }
 
     * { box-sizing: border-box; }
@@ -30,62 +44,67 @@
     body {
       font-family: Arial, sans-serif;
       background: var(--bg);
+      color: var(--text);
       margin: 0;
       padding: 20px;
     }
 
     /* Hauptbox */
     .box {
-      background: #fff;
+      background: var(--input-bg);
       padding: 20px;
       max-width: 480px;
       width: 100%;
       margin: auto;
       border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      color: var(--text);
     }
 
+    /* Inputs iOS Bugfix */
+    input, button {
+      font-size: 17px !important; /* verhindert iOS Auto‑Zoom */
+    }
 
-/* Inputs iOS Bugfix */
-input, button {
-  font-size: 17px !important;
-  box-sizing: border-box !important; /* iOS fix */
-}
+    input[type="time"],
+    input[type="number"] {
+      width: 160px;          /* kompakter */
+      max-width: 100%;
+      padding: 12px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      margin-top: 6px;
+      margin-bottom: 12px;
+    }
 
-/* Input-Felder */
-input[type="time"],
-input[type="number"] {
-  width: 100%;
-  max-width: 100%;
-  padding: 12px 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  margin-top: 6px;
-  margin-bottom: 12px;
+    button {
+      width: 100%;
+      padding: 14px;
+      background: var(--brand);
+      color: white;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
 
-  /* verhindert „Aus-der-Box-Ragen“ auf iOS */
-  display: block;
-}
+    button:hover {
+      background: var(--brand-dark);
+    }
 
-/* Zeilen-Layout */
-.row {
-  display: flex;
-  gap: 16px;
-  width: 100%;
-}
+    .row {
+      display: flex;
+      gap: 16px;
+      width: 100%;
+    }
 
-.row > div {
-  flex: 1 1 0;
-}
-
-/* Mobile – untereinander */
-@media (max-width: 500px) {
-  .row {
-    flex-direction: column;
-    gap: 0;
-  }
-}
-
+    /* iPhone: Spalten untereinander */
+    @media (max-width: 500px) {
+      .row { flex-direction: column; gap: 0; }
+    }
 
     .result {
       margin-top: 20px;
@@ -94,6 +113,15 @@ input[type="number"] {
       border-left: 4px solid var(--brand);
       border-radius: 6px;
       font-size: 16px;
+      color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .result {
+        background: #133b67;
+        color: #f0f4ff;
+        border-left-color: var(--brand);
+      }
     }
 
     .muted {
@@ -102,6 +130,13 @@ input[type="number"] {
       margin-top: -6px;
       margin-bottom: 10px;
     }
+
+    @media (prefers-color-scheme: dark) {
+      .muted {
+        color: #aac6ff;
+      }
+    }
+
   </style>
 </head>
 
@@ -112,29 +147,27 @@ input[type="number"] {
     <div class="row">
       <div>
         <label>Arbeitsbeginn</label>
-        <input type="time" id="start" />
+        <input type="time" id="start">
       </div>
-
       <div>
         <label>Mittagspause Start</label>
-        <input type="time" id="lunchStart" />
+        <input type="time" id="lunchStart">
       </div>
     </div>
 
     <div class="row">
       <div>
         <label>Mittagspause Ende</label>
-        <input type="time" id="lunchEnd" />
+        <input type="time" id="lunchEnd">
       </div>
-
       <div>
         <label>Überzeit (min) ±</label>
-        <input type="number" id="overtime" value="0" step="5" />
+        <input type="number" id="overtime" value="0" step="5">
       </div>
     </div>
 
     <div class="muted">
-      Sollzeit ist fix: <strong>8 h 18 min</strong> (498 min)
+      Sollzeit ist fix: <strong>8 h 18 min</strong> (498 min)
     </div>
 
     <button id="calcBtn">Feierabend berechnen</button>
@@ -180,6 +213,7 @@ input[type="number"] {
         return alert("Mittag Ende muss nach Mittag Start sein.");
 
       const morning = ls - start;
+
       let feierabend =
         morning >= TARGET_MIN ? start + TARGET_MIN : le + (TARGET_MIN - morning);
 
@@ -198,5 +232,6 @@ input[type="number"] {
       .getElementById("calcBtn")
       .addEventListener("click", calcFeierabend);
   </script>
+
 </body>
 </html>
