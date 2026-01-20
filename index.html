@@ -45,50 +45,47 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
 
-    /* Inputs iOS Bugfix */
-    input, button {
-      font-size: 17px !important; /* Verhindert iOS Auto‑Zoom */
-    }
 
-    input[type="time"],
-    input[type="number"] {
-      width: 100%;
-      padding: 12px 10px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      margin-top: 6px;
-      margin-bottom: 12px;
-    }
+/* Inputs iOS Bugfix */
+input, button {
+  font-size: 17px !important;
+  box-sizing: border-box !important; /* iOS fix */
+}
 
-    button {
-      width: 100%;
-      padding: 14px;
-      background: var(--brand);
-      color: white;
-      font-size: 18px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
+/* Input-Felder */
+input[type="time"],
+input[type="number"] {
+  width: 100%;
+  max-width: 100%;
+  padding: 12px 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-top: 6px;
+  margin-bottom: 12px;
 
-    button:hover {
-      background: var(--brand-dark);
-    }
+  /* verhindert „Aus-der-Box-Ragen“ auf iOS */
+  display: block;
+}
 
-    .row {
-      display: flex;
-      gap: 16px;
-      width: 100%;
-    }
+/* Zeilen-Layout */
+.row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
 
-    /* Responsive: Bei iPhone Breite spalten untereinander */
-    @media (max-width: 500px) {
-      .row {
-        flex-direction: column;
-        gap: 0;
-      }
-    }
+.row > div {
+  flex: 1 1 0;
+}
+
+/* Mobile – untereinander */
+@media (max-width: 500px) {
+  .row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
 
     .result {
       margin-top: 20px;
