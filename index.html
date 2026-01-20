@@ -5,36 +5,42 @@
   <meta charset="UTF-8" />
   <title>Arbeitszeit‑Rechner</title>
 
-  <!-- iOS / Mobile Optimierung -->
   <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0078d4">
-
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js");
-    }
-  </script>
 
   <style>
     :root {
       --brand: #0078d4;
       --brand-dark: #005fa3;
+
+      /* LIGHT MODE */
       --bg: #f5f5f5;
-      --text: #000;
-      --input-bg: #fff;
-      --input-border: #ccc;
+      --box-bg: #ffffff;
+      --text: #000000;
+      --muted: #666666;
+
+      --input-bg: #ffffff;
+      --input-border: #cccccc;
+      --result-bg: #e8f4ff;
+      --result-text: #000000;
     }
 
-    /* Dark Mode */
+    /* DARK MODE */
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0a2a4d;             /* Dunkles Blau */
-        --text: #f0f4ff;           /* Sehr helles Blau-Weiß */
-        --input-bg: #113966;       /* leicht helleres Blau */
-        --input-border: #3a5a80;   /* subtiler Kontrast */
-        --brand: #2f8fff;          /* Button bleibt blau, wirkt auf dark gut */
+        --bg: #0a2a4d;          /* Dunkelblau */
+        --box-bg: #113966;      /* Etwas helleres Blau */
+        --text: #f0f4ff;        /* Helles Schriftbild */
+        --muted: #aac6ff;
+
+        --input-bg: #1a4470;    /* Konsistent blau */
+        --input-border: #3a5a80;
+
+        --result-bg: #173f6b;
+        --result-text: #f0f4ff;
+
+        --brand: #2f8fff;
         --brand-dark: #1b6fcc;
       }
     }
@@ -49,9 +55,8 @@
       padding: 20px;
     }
 
-    /* Hauptbox */
     .box {
-      background: var(--input-bg);
+      background: var(--box-bg);
       padding: 20px;
       max-width: 480px;
       width: 100%;
@@ -61,20 +66,16 @@
       color: var(--text);
     }
 
-    /* Inputs iOS Bugfix */
-    input, button {
-      font-size: 17px !important; /* verhindert iOS Auto‑Zoom */
-    }
-
+    /* Einheitliche Breite für alle Inputs */
     input[type="time"],
     input[type="number"] {
-      width: 160px;          /* kompakter */
-      max-width: 100%;
+      width: 100%;              /* ALLE gleich breit */
       padding: 12px 10px;
       border-radius: 10px;
       border: 1px solid var(--input-border);
       background: var(--input-bg);
       color: var(--text);
+      font-size: 17px !important;
       margin-top: 6px;
       margin-bottom: 12px;
     }
@@ -90,10 +91,7 @@
       cursor: pointer;
       margin-top: 10px;
     }
-
-    button:hover {
-      background: var(--brand-dark);
-    }
+    button:hover { background: var(--brand-dark); }
 
     .row {
       display: flex;
@@ -101,7 +99,7 @@
       width: 100%;
     }
 
-    /* iPhone: Spalten untereinander */
+    /* Spalten auf Mobile untereinander */
     @media (max-width: 500px) {
       .row { flex-direction: column; gap: 0; }
     }
@@ -109,34 +107,19 @@
     .result {
       margin-top: 20px;
       padding: 14px;
-      background: #e8f4ff;
+      background: var(--result-bg);
       border-left: 4px solid var(--brand);
       border-radius: 6px;
       font-size: 16px;
-      color: #000;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .result {
-        background: #133b67;
-        color: #f0f4ff;
-        border-left-color: var(--brand);
-      }
+      color: var(--result-text);
     }
 
     .muted {
-      color: #666;
+      color: var(--muted);
       font-size: 14px;
       margin-top: -6px;
       margin-bottom: 10px;
     }
-
-    @media (prefers-color-scheme: dark) {
-      .muted {
-        color: #aac6ff;
-      }
-    }
-
   </style>
 </head>
 
@@ -228,9 +211,7 @@
       `;
     }
 
-    document
-      .getElementById("calcBtn")
-      .addEventListener("click", calcFeierabend);
+    document.getElementById("calcBtn").addEventListener("click", calcFeierabend);
   </script>
 
 </body>
