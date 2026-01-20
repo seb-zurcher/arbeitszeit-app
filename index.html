@@ -1,36 +1,23 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <title>Arbeitszeit‑Rechner</title>
-
-  <!-- iOS Optimierung -->
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-
-  <!-- iOS Dark/Light Unterstützung -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0078d4">
 
-  <!-- PWA Icons für Apple -->
+  <!-- Apple PWA Icons -->
   <link rel="apple-touch-icon" sizes="1024x1024" href="icon_1024x1024.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icon_180x180.png">
   <link rel="apple-touch-icon" sizes="167x167" href="icon_167x167.png">
   <link rel="apple-touch-icon" sizes="152x152" href="icon_152x152.png">
   <link rel="apple-touch-icon" sizes="120x120" href="icon_120x120.png">
 
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="manifest.json">
-
-  <!-- Theme-Farbe für iOS / Android -->
-  <meta name="theme-color" content="#0078d4">
-
   <style>
     :root {
       --brand: #0078d4;
       --brand-dark: #005fa3;
-
-      /* Light Mode */
       --bg: #f5f5f5;
       --box-bg: #ffffff;
       --text: #000;
@@ -41,20 +28,16 @@
       --result-text: #000;
     }
 
-    /* DARK MODE */
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0a2a4d;       
+        --bg: #0a2a4d;
         --box-bg: #113966;
         --text: #f0f4ff;
         --muted: #aac6ff;
-
         --input-bg: #1a4470;
         --input-border: #3a5a80;
-
         --result-bg: #173f6b;
         --result-text: #f0f4ff;
-
         --brand: #2f8fff;
         --brand-dark: #1b6fcc;
       }
@@ -81,38 +64,48 @@
       color: var(--text);
     }
 
-    /* iOS Input Fix */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
     input[type="time"],
     input[type="number"] {
+      height: 40px;
+      line-height: 40px;
+      padding: 0 10px;
+      margin: 0 !important;
       width: 100%;
       max-width: 100%;
-      min-width: 0;                       /* ← WICHTIG für iOS */
-      appearance: none;                   
-      -webkit-appearance: none;           /* ← Safari Fix */
-      padding: 12px 10px;
+      min-width: 0;
+      appearance: none;
+      -webkit-appearance: none;
       border-radius: 10px;
       border: 1px solid var(--input-border);
       background: var(--input-bg);
       color: var(--text);
-      font-size: 17px !important;         /* verhindert iOS Auto-Zoom */
-      margin-top: 6px;
-      margin-bottom: 12px;
+      font-size: 17px !important;
     }
 
-    /* Spaltenlayout */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
     .row {
       display: flex;
       gap: 16px;
       width: 100%;
     }
 
-    /* iOS Width Overflow Fix */
     .row > div {
       min-width: 0;
       flex: 1;
     }
 
-    /* Mobile: untereinander */
     @media (max-width: 500px) {
       .row { flex-direction: column; gap: 0; }
     }
@@ -154,22 +147,22 @@
     <h2>Arbeitszeit‑Rechner</h2>
 
     <div class="row">
-      <div>
+      <div class="form-group">
         <label>Arbeitsbeginn</label>
         <input type="time" id="start">
       </div>
-      <div>
+      <div class="form-group">
         <label>Mittagspause Start</label>
         <input type="time" id="lunchStart">
       </div>
     </div>
 
     <div class="row">
-      <div>
+      <div class="form-group">
         <label>Mittagspause Ende</label>
         <input type="time" id="lunchEnd">
       </div>
-      <div>
+      <div class="form-group">
         <label>Überzeit (min) ±</label>
         <input type="number" id="overtime" value="0" step="5">
       </div>
@@ -184,26 +177,51 @@
     <div id="output" class="result" style="display:none"></div>
   </div>
 
+<script>
+const TARGET_MIN = 8 * 60 + 18;
 
-  <script>
-    const TARGET_MIN = 8 * 60 + 18;
+function toMinutes(str) {
+  if (!str) return NaN;
+  const [h, m] = str.split(":" ).map(Number);
+  return h * 60 + m;
+}
 
-    function toMinutes(str) {
-      if (!str) return NaN;
-      const [h, m] = str.split(":").map(Number);
-      return h * 60 + m;
-    }
+function minutesToHHMM(mins) {
+  mins = ((mins % (24 * 60)) + (24 * 60)) % (24 * 60);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+}
 
-    function minutesToHHMM(mins) {
-      mins = ((mins % (24 * 60)) + (24 * 60)) % (24 * 60);
-      const h = Math.floor(mins / 60);
-      const m = mins % 60;
-      return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-    }
+function fmtMinutesSigned(m) {
+  return m > 0 ? `+${m} min` : m < 0 ? `−${Math.abs(m)} min` : "0 min";
+}
 
-    function fmtMinutesSigned(m) {
-      return m > 0 ? `+${m} min` : m < 0 ? `−${Math.abs(m)} min` : "0 min";
-    }
+function calcFeierabend() {
+  const start = toMinutes(document.getElementById("start").value);
+  const ls = toMinutes(document.getElementById("lunchStart").value);
+  const le = toMinutes(document.getElementById("lunchEnd").value);
+  const ot = parseInt(document.getElementById("overtime").value || 0);
 
-    function calcFeierabend() {
-      const start = toMinutes(document.getElementById("start").value);
+  if (isNaN(start) || isNaN(ls) || isNaN(le)) return alert("Bitte Zeiten ausfüllen.");
+  if (ls <= start) return alert("Mittag Start muss nach Arbeitsbeginn sein.");
+  if (le <= ls) return alert("Mittag Ende muss nach Mittag Start sein.");
+
+  const morning = ls - start;
+  let feierabend = morning >= TARGET_MIN ? start + TARGET_MIN : le + (TARGET_MIN - morning);
+  const withOT = feierabend + ot;
+
+  const out = document.getElementById("output");
+  out.style.display = "block";
+  out.innerHTML = `
+    <strong>Feierabend (Soll):</strong> ${minutesToHHMM(feierabend)}<br>
+    <strong>Feierabend (mit Überzeit):</strong> ${minutesToHHMM(withOT)}<br>
+    <strong>Überzeit/Unterzeit:</strong> ${fmtMinutesSigned(ot)}
+  `;
+}
+
+document.getElementById("calcBtn").addEventListener("click", calcFeierabend);
+</script>
+
+</body>
+</html>
