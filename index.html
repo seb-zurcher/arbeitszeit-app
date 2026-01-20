@@ -2,11 +2,27 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Arbeitszeit‑Rechner</title>
 
+  <!-- iOS Optimierung -->
   <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <!-- iOS Dark/Light Unterstützung -->
+  <meta name="color-scheme" content="light dark">
+
+  <!-- PWA Icons für Apple -->
+  <link rel="apple-touch-icon" sizes="1024x1024" href="icon_1024x1024.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icon_180x180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icon_167x167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icon_152x152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="icon_120x120.png">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Theme-Farbe für iOS / Android -->
   <meta name="theme-color" content="#0078d4">
 
   <style>
@@ -14,27 +30,26 @@
       --brand: #0078d4;
       --brand-dark: #005fa3;
 
-      /* LIGHT MODE */
+      /* Light Mode */
       --bg: #f5f5f5;
       --box-bg: #ffffff;
-      --text: #000000;
-      --muted: #666666;
-
+      --text: #000;
+      --muted: #666;
       --input-bg: #ffffff;
-      --input-border: #cccccc;
+      --input-border: #ccc;
       --result-bg: #e8f4ff;
-      --result-text: #000000;
+      --result-text: #000;
     }
 
     /* DARK MODE */
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0a2a4d;          /* Dunkelblau */
-        --box-bg: #113966;      /* Etwas helleres Blau */
-        --text: #f0f4ff;        /* Helles Schriftbild */
+        --bg: #0a2a4d;       
+        --box-bg: #113966;
+        --text: #f0f4ff;
         --muted: #aac6ff;
 
-        --input-bg: #1a4470;    /* Konsistent blau */
+        --input-bg: #1a4470;
         --input-border: #3a5a80;
 
         --result-bg: #173f6b;
@@ -66,18 +81,40 @@
       color: var(--text);
     }
 
-    /* Einheitliche Breite für alle Inputs */
+    /* iOS Input Fix */
     input[type="time"],
     input[type="number"] {
-      width: 100%;              /* ALLE gleich breit */
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;                       /* ← WICHTIG für iOS */
+      appearance: none;                   
+      -webkit-appearance: none;           /* ← Safari Fix */
       padding: 12px 10px;
       border-radius: 10px;
       border: 1px solid var(--input-border);
       background: var(--input-bg);
       color: var(--text);
-      font-size: 17px !important;
+      font-size: 17px !important;         /* verhindert iOS Auto-Zoom */
       margin-top: 6px;
       margin-bottom: 12px;
+    }
+
+    /* Spaltenlayout */
+    .row {
+      display: flex;
+      gap: 16px;
+      width: 100%;
+    }
+
+    /* iOS Width Overflow Fix */
+    .row > div {
+      min-width: 0;
+      flex: 1;
+    }
+
+    /* Mobile: untereinander */
+    @media (max-width: 500px) {
+      .row { flex-direction: column; gap: 0; }
     }
 
     button {
@@ -93,25 +130,14 @@
     }
     button:hover { background: var(--brand-dark); }
 
-    .row {
-      display: flex;
-      gap: 16px;
-      width: 100%;
-    }
-
-    /* Spalten auf Mobile untereinander */
-    @media (max-width: 500px) {
-      .row { flex-direction: column; gap: 0; }
-    }
-
     .result {
       margin-top: 20px;
       padding: 14px;
       background: var(--result-bg);
       border-left: 4px solid var(--brand);
       border-radius: 6px;
-      font-size: 16px;
       color: var(--result-text);
+      font-size: 16px;
     }
 
     .muted {
@@ -125,7 +151,7 @@
 
 <body>
   <div class="box">
-    <h2 style="margin-top:0;">Arbeitszeit‑Rechner</h2>
+    <h2>Arbeitszeit‑Rechner</h2>
 
     <div class="row">
       <div>
@@ -150,13 +176,14 @@
     </div>
 
     <div class="muted">
-      Sollzeit ist fix: <strong>8 h 18 min</strong> (498 min)
+      Sollzeit: <strong>8 h 18 min</strong> (498 min)
     </div>
 
     <button id="calcBtn">Feierabend berechnen</button>
 
     <div id="output" class="result" style="display:none"></div>
   </div>
+
 
   <script>
     const TARGET_MIN = 8 * 60 + 18;
@@ -175,44 +202,8 @@
     }
 
     function fmtMinutesSigned(m) {
-      return m > 0 ? `+${m} min`
-           : m < 0 ? `−${Math.abs(m)} min`
-           : "0 min";
+      return m > 0 ? `+${m} min` : m < 0 ? `−${Math.abs(m)} min` : "0 min";
     }
 
     function calcFeierabend() {
       const start = toMinutes(document.getElementById("start").value);
-      const ls = toMinutes(document.getElementById("lunchStart").value);
-      const le = toMinutes(document.getElementById("lunchEnd").value);
-      const ot = parseInt(document.getElementById("overtime").value || 0);
-
-      if (isNaN(start) || isNaN(ls) || isNaN(le))
-        return alert("Bitte Zeiten ausfüllen.");
-
-      if (ls <= start)
-        return alert("Mittag Start muss nach Arbeitsbeginn sein.");
-
-      if (le <= ls)
-        return alert("Mittag Ende muss nach Mittag Start sein.");
-
-      const morning = ls - start;
-
-      let feierabend =
-        morning >= TARGET_MIN ? start + TARGET_MIN : le + (TARGET_MIN - morning);
-
-      const withOT = feierabend + ot;
-
-      const out = document.getElementById("output");
-      out.style.display = "block";
-      out.innerHTML = `
-        <strong>Feierabend (Soll):</strong> ${minutesToHHMM(feierabend)}<br>
-        <strong>Feierabend (mit Überzeit):</strong> ${minutesToHHMM(withOT)}<br>
-        <strong>Überzeit/Unterzeit:</strong> ${fmtMinutesSigned(ot)}
-      `;
-    }
-
-    document.getElementById("calcBtn").addEventListener("click", calcFeierabend);
-  </script>
-
-</body>
-</html>
