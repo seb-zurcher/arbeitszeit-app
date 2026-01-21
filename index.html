@@ -2,25 +2,32 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Arbeitszeit‑Rechner</title>
+  <title>Arbeitszeit-Rechner</title>
+
+  <!-- Viewport + iOS/PWA Fix -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <link rel="manifest" href="./manifest.json">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#0078d4">
-
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Arbeitszeit">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-<!-- iOS Homescreen Icon: WICHTIG Reihenfolge -->
-<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon-180.png">
-<link rel="apple-touch-icon" sizes="167x167" href="./icons/apple-touch-icon-167.png">
-<link rel="apple-touch-icon" sizes="152x152" href="./icons/apple-touch-icon-152.png">
-<link rel="apple-touch-icon" sizes="120x120" href="./icons/apple-touch-icon-120.png">
-<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- iOS Homescreen Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon-180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="./icons/apple-touch-icon-167.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="./icons/apple-touch-icon-152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="./icons/apple-touch-icon-120.png">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 
   <style>
+    /* ===============================
+       Punkt 1: iOS / PWA Text-Scaling
+       =============================== */
+    html { -webkit-text-size-adjust: 100%; }
+
     :root {
       --brand: #0078d4;
       --brand-dark: #005fa3;
@@ -52,47 +59,62 @@
     * { box-sizing: border-box; }
 
     body {
-      font-family: Arial, sans-serif;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
       margin: 0;
       padding: 20px;
+      line-height: 1.35;
     }
 
     .box {
       background: var(--box-bg);
       padding: 20px;
       max-width: 480px;
-      width: 100%;
       margin: auto;
       border-radius: 16px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-      color: var(--text);
     }
 
+    h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+
+    /* ===============================
+       Punkt 2 + 3: Labels & Spacing
+       =============================== */
     .form-group {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      width: 100%;
+      margin-bottom: 12px;
     }
 
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .2px;
+      color: var(--muted);
+      line-height: 1.2;
+      margin-top: 6px;
+    }
+
+    /* ===============================
+       Punkt 4: Inputs sauber & touch-freundlich
+       =============================== */
     input[type="time"],
     input[type="number"] {
-      height: 40px;
-      line-height: 40px;
-      padding: 0 10px;
-      margin: 0 !important;
       width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      appearance: none;
-      -webkit-appearance: none;
+      height: 44px;
+      padding: 0 12px;
       border-radius: 10px;
       border: 1px solid var(--input-border);
       background: var(--input-bg);
       color: var(--text);
-      font-size: 17px !important;
+      font-size: 16px;
+      appearance: none;
+      -webkit-appearance: none;
     }
 
     input[type="number"]::-webkit-inner-spin-button,
@@ -108,12 +130,15 @@
     }
 
     .row > div {
-      min-width: 0;
       flex: 1;
+      min-width: 0;
     }
 
     @media (max-width: 500px) {
-      .row { flex-direction: column; gap: 0; }
+      .row {
+        flex-direction: column;
+        gap: 0;
+      }
     }
 
     button {
@@ -127,7 +152,17 @@
       cursor: pointer;
       margin-top: 10px;
     }
-    button:hover { background: var(--brand-dark); }
+
+    button:hover {
+      background: var(--brand-dark);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: -4px;
+      margin-bottom: 12px;
+    }
 
     .result {
       margin-top: 20px;
@@ -138,38 +173,31 @@
       color: var(--result-text);
       font-size: 16px;
     }
-
-    .muted {
-      color: var(--muted);
-      font-size: 14px;
-      margin-top: -6px;
-      margin-bottom: 10px;
-    }
   </style>
 </head>
 
 <body>
   <div class="box">
-    <h2>Arbeitszeit‑Rechner</h2>
+    <h2>Arbeitszeit-Rechner</h2>
 
     <div class="row">
       <div class="form-group">
-        <label>Arbeitsbeginn</label>
+        <label for="start">Arbeitsbeginn</label>
         <input type="time" id="start">
       </div>
       <div class="form-group">
-        <label>Mittagspause Start</label>
+        <label for="lunchStart">Mittagspause Start</label>
         <input type="time" id="lunchStart">
       </div>
     </div>
 
     <div class="row">
       <div class="form-group">
-        <label>Mittagspause Ende</label>
+        <label for="lunchEnd">Mittagspause Ende</label>
         <input type="time" id="lunchEnd">
       </div>
       <div class="form-group">
-        <label>Überzeit (min) ±</label>
+        <label for="overtime">Überzeit (min) ±</label>
         <input type="number" id="overtime" value="0" step="5">
       </div>
     </div>
@@ -188,7 +216,7 @@ const TARGET_MIN = 8 * 60 + 18;
 
 function toMinutes(str) {
   if (!str) return NaN;
-  const [h, m] = str.split(":" ).map(Number);
+  const [h, m] = str.split(":").map(Number);
   return h * 60 + m;
 }
 
@@ -204,10 +232,10 @@ function fmtMinutesSigned(m) {
 }
 
 function calcFeierabend() {
-  const start = toMinutes(document.getElementById("start").value);
-  const ls = toMinutes(document.getElementById("lunchStart").value);
-  const le = toMinutes(document.getElementById("lunchEnd").value);
-  const ot = parseInt(document.getElementById("overtime").value || 0);
+  const start = toMinutes(startInput.value);
+  const ls = toMinutes(lunchStartInput.value);
+  const le = toMinutes(lunchEndInput.value);
+  const ot = parseInt(overtimeInput.value || 0);
 
   if (isNaN(start) || isNaN(ls) || isNaN(le)) return alert("Bitte Zeiten ausfüllen.");
   if (ls <= start) return alert("Mittag Start muss nach Arbeitsbeginn sein.");
@@ -217,14 +245,19 @@ function calcFeierabend() {
   let feierabend = morning >= TARGET_MIN ? start + TARGET_MIN : le + (TARGET_MIN - morning);
   const withOT = feierabend + ot;
 
-  const out = document.getElementById("output");
-  out.style.display = "block";
-  out.innerHTML = `
+  output.style.display = "block";
+  output.innerHTML = `
     <strong>Feierabend (Soll):</strong> ${minutesToHHMM(feierabend)}<br>
     <strong>Feierabend (mit Überzeit):</strong> ${minutesToHHMM(withOT)}<br>
     <strong>Überzeit/Unterzeit:</strong> ${fmtMinutesSigned(ot)}
   `;
 }
+
+const startInput = document.getElementById("start");
+const lunchStartInput = document.getElementById("lunchStart");
+const lunchEndInput = document.getElementById("lunchEnd");
+const overtimeInput = document.getElementById("overtime");
+const output = document.getElementById("output");
 
 document.getElementById("calcBtn").addEventListener("click", calcFeierabend);
 </script>
