@@ -1,5 +1,5 @@
 {
-  "name": "Arbeitszeit Rechner ZES",
+  "name": "Arbeitszeit Rechner",
   "short_name": "Arbeitszeit",
   "start_url": "./index.html",
   "display": "standalone",
